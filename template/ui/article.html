@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Title}}</title>
+  <title>{{.Article.Title}}</title>
   <link rel="alternate" href="feed.json" type="application/json" />
-  {{- if .Canonical }}
-  <link rel="canonical" href="{{.Canonical}}">
+  {{- if .Article.Canonical }}
+  <link rel="canonical" href="{{.Article.Canonical}}">
   {{- end }}
   <style>
     body {
@@ -92,9 +92,6 @@
       margin: 0 0.05em;
       padding: 3px 5px;
     }
-    footer {
-      margin: 20px 0;
-    }
   </style>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
@@ -108,28 +105,25 @@
 
     <article>
       <header class="lede">
-        <h1 class="lede__headline">{{.Title}}</h1>
+        <h1 class="lede__headline">
+          {{.Article.Title}}
+        </h1>
 
         <div class="lede__byline">
-          {{- range .Authors }}
+          {{- range $index, $author := .Article.Authors }}
             <div class="lede__author">
-              <a href="{{.URL}}" rel="author">{{.Name}}</a>
+              {{$author}}
             </div>
           {{- end }}
 
-          <time datetime="{{.LastUpdated}}">
-            last updated {{.LastUpdatedOn}}
+          <time datetime="{{.Article.LastUpdated}}">
+            last updated {{.Article.LastUpdatedOn}}
           </time>
         </div>
       </header>
-      {{.Body}}
-    </article>
 
-    <footer>
-      {{- if .Blog.SourceURL }}
-        <a href="{{.Blog.SourceURL}}/articles/{{.ID}}.md">Edit this article</a>
-      {{- end }}
-    </footer>
+      {{.Article.Body}}
+    </article>
   </div>
 </body>
 </html>

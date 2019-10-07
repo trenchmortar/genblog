@@ -1,4 +1,7 @@
 {
-  "name": "Blog",
-  "url": "https://blog.example.com"
+  "blog": {
+    "name": "Blog",
+    "url": "https://blog.example.com"
+  },
+  "articles": []
 }

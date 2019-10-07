@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Name}}</title>
+  <title>{{.Blog.Name}}</title>
   <link rel="alternate" href="feed.json" type="application/json" />
   <style>
     body {
@@ -61,11 +61,11 @@
 <body>
   <div class="container">
     <nav>
-      {{.Name}}
+      {{.Blog.Name}}
 
       {{- if .Tags }}
         <div class="tags">
-          {{- range $tag, $count := .Tags }}
+          {{- range $index, $tag := .Tags }}
             <a href="/tags/{{$tag}}">{{$tag}}</a>&nbsp;
           {{- end }}
         </div>
