@@ -7,6 +7,7 @@ A static blog generator featuring:
 * Local preview server
 * JSON feed
 * Images
+* Embedded code blocks
 * Drafts
 * Anonymous, single author, or multiple authors
 * Tags
@@ -66,7 +67,8 @@ Add an article:
 ```
 
 Edit `articles/example-article.md` in a text editor.
-This is a pure Markdown file with no front matter.
+It is a [GitHub-Flavored Markdown](https://github.github.com/gfm/) file
+with no front matter.
 
 The first line of the file is the article title.
 It must be an `<h1>` tag:
@@ -89,6 +91,40 @@ Refer to them in articles via relative path:
 ```md
 ![alt text](images/example.png)
 ```
+
+In addition to
+[fenced code blocks](https://github.github.com/gfm/#fenced-code-blocks),
+`./genblog` recognizes a special `embed`
+[info string](https://github.github.com/gfm/#info-string).
+
+This Markdown...
+
+    Instantiate a client:
+
+    ```embed
+    example.rb instantiate
+    ```
+
+...embeds code from `articles/code/example.rb` like this:
+
+```ruby
+# begindoc: instantiate
+require 'example-sdk'
+
+client = Example::Client.new(
+  credential: '...',
+  name: 'example',
+)
+# enddoc: instantiate
+```
+
+The `begindoc` and `enddoc` magic comments demarcate code blocks by id.
+In this example, the id is `instantiate`.
+The magic comments work for all common programming languages.
+
+This allows you to run the embedded code,
+or tests against the embedded code,
+separate from Markdown prose.
 
 ## Configure
 
