@@ -7,18 +7,16 @@ A static blog generator featuring:
 * Local preview server
 * JSON feed
 * Images
-* Single config file
 * Drafts
 * Anonymous, single author, or multiple authors
 * Tags
 * "Last updated" timestamp
 * Redirects
-* Editable UI
 * `rel=canonical` tags
-* "Edit this article" footer links
+* Default theme (can be edited directly)
 
-See [a blog with the default UI](https://www.statusok.com).
-The default UI features:
+See [a blog with the default theme](https://www.statusok.com).
+The default theme features:
 
 * Responsive design
 * PageSpeed Insights performance score of 100
@@ -26,21 +24,43 @@ The default UI features:
 
 ## Create a blog
 
-Download the project template:
+Download the latest release:
 
 ```
-curl -sL https://github.com/statusok/genblog/releases/download/v0.0.1/blog.tar.gz | tar xvz
+curl -sL https://github.com/statusok/genblog/releases/download/v0.1.0/blog.tar.gz | tar xvz
 ```
 
-The template contains the `./genblog` script.
-It has no external dependencies.
+It contains:
+
+```
+.
+├── .gitignore
+├── README.md
+├── articles
+│   ├── code
+│   └── images
+├── bin
+│   ├── linux
+│   └── mac
+├── config.json
+├── genblog
+├── public
+└── theme
+    ├── _headers
+    ├── article.html
+    ├── index.html
+    └── tag.html
+```
+
+The `./genblog` script invokes the OS-specific `./bin/{linux,mac}` binary.
+It requires no external dependencies (such as programming languages).
 
 ## Write
 
-Generate an article:
+Add an article:
 
 ```
-./genblog article example-article
+./genblog add example-article
 ```
 
 Edit `articles/example-article.md` in a text editor.
@@ -59,9 +79,9 @@ Preview at <http://localhost:2000> with:
 ./genblog serve
 ```
 
-See the JSON feed at <http://localhost:2000/feed.json>.
+See the [JSON feed](https://jsonfeed.org/) at <http://localhost:2000/feed.json>.
 
-Add images to the `public/images` directory.
+Add images to the `articles/images` directory.
 Refer to them in articles via relative path:
 
 ```md
@@ -74,23 +94,26 @@ Configure blog in `config.json`:
 
 ```json
 {
+  "blog": {
+    "name": "Blog",
+    "url": "https://blog.example.com"
+  },
   "articles": [
     {
-      "id": "article-with-minimum-required-elements",
+      "id": "article-is-draft-if-published-is-future-date",
+      "published": "2050-01-01"
+    },
+    {
+      "id": "article-with-anonymous-author",
       "published": "2018-04-15"
     },
     {
-      "author_ids": [
-        "alice",
-      ],
+      "author": "Alice",
       "id": "article-with-single-author",
       "published": "2018-04-01"
     },
     {
-      "author_ids": [
-        "alice",
-        "bob"
-      ],
+      "author": "Alice and Bob",
       "id": "article-with-multiple-authors",
       "published": "2018-03-15"
     },
@@ -121,27 +144,55 @@ Configure blog in `config.json`:
       "id": "article-with-rel-canonical",
       "published": "2018-01-15"
     }
-  ],
-  "authors": [
-    {
-      "id": "alice",
-      "name": "Alice",
-      "url": "https://example.com/alice"
-    },
-    {
-      "id": "bob",
-      "name": "Bob",
-      "url": "https://example.com/bob"
-    }
-  ],
-  "name": "Example Blog",
-  "source_url": "https://github.com/example/example/tree/master",
-  "url": "https://blog.example.com"
+  ]
 }
 ```
 
-Set `source_url` to get "Edit this article" footer links
-to the article's Markdown file.
+## Extend theme
+
+The `theme` directory contains files that can be edited
+to customize the blog's HTTP headers, HTML, CSS, and JavaScript.
+
+```
+.
+├── _headers
+├── article.html
+├── index.html
+└── tag.html
+```
+
+The `_headers` file is copied to `public/_headers` to be used as
+[Netlify Headers](https://www.netlify.com/docs/headers-and-basic-auth/).
+
+The `.html` files are used as templates by `./genblog`.
+They are parsed as [Go templates](https://gowebexamples.com/templates/).
+
+The `article.html` file accepts a data structure like this:
+
+```
+{
+  Blog: {
+    Name:          "Blog",
+    URL:           "https://blog.example.com",
+  }
+  Article: {
+    Author:        "Alice",
+    Body:          "<p>Hello, world.</p>",
+    Canonical:     "https://seo.example.com/avoid-duplicate-content-penalty"
+    ID:            "example-article",
+    LastUpdated:   "2018-04-15",
+    LastUpdatedIn: "2018 April",
+    LastUpdatedOn: "April 15, 2018",
+    Published:     "2018-04-10",
+    Tags: [
+      "go",
+      "unix",
+    ],
+    Title:         "Example Article",
+    Updated:       "2018-04-15",
+  }
+}
+```
 
 ## Publish
 
@@ -152,24 +203,46 @@ Configure [Netlify](https://www.netlify.com):
 * Build Cmd: `./genblog build`
 * Public folder: `public`
 
-To publish articles, commit to the GitHub repo:
-
-```
-git add --all
-git commit --verbose
-git push
-```
+To publish articles, commit and push to the GitHub repo.
 
 View deploy logs in the Netlify web interface.
 
 ## Get help
 
+Read [MIT License][license].
 View [releases].
 Open a [GitHub Issue][issues].
-Read [contribution instructions][contrib]
-and [MIT License][license].
 
+[license]: https://github.com/statusok/genblog/blob/master/LICENSE
 [releases]: https://github.com/statusok/genblog/releases
 [issues]: https://github.com/statusok/genblog/issues
-[contrib]: https://github.com/statusok/genblog/blob/master/CONTRIBUTING.md
-[license]: https://github.com/statusok/genblog/blob/master/LICENSE
+
+## Contribute
+
+Get a working [Go installation](http://golang.org/doc/install).
+For example, on macOS:
+
+```
+gover="1.13.1"
+
+if ! go version | grep -Fq "$gover"; then
+  sudo rm -rf /usr/local/go
+  curl "https://dl.google.com/go/go$gover.darwin-amd64.tar.gz" | \
+    sudo tar xz -C /usr/local
+fi
+```
+
+Fork the repo.
+Clone the project.
+
+```
+git clone https://github.com/statusok/genblog.git
+cd genblog
+go test -race ./...
+```
+
+Make changes.
+Push to your fork.
+Open a pull request.
+Discuss with reviewers.
+A maintainer will merge.

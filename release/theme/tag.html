@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{.Name}}</title>
+  <title>{{.Tag}}</title>
   <link rel="alternate" href="feed.json" type="application/json" />
   <style>
     body {
@@ -36,11 +36,9 @@
         margin: 1rem 0;
       }
     }
+    article,
     main {
       margin: 1.5rem 0;
-    }
-    nav .tags {
-      margin: 1.5rem 0 0.5rem 0;
     }
     .index-article {
       margin: 1rem 0;
@@ -55,22 +53,30 @@
     .index-article__link:hover {
       color: #3c3c3c;
     }
+    .lede {
+      margin: 20px 0;
+    }
+    .lede__headline {
+      font-size: 32px;
+      line-height: 38px;
+      margin: 0;
+    }
   </style>
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
   <div class="container">
     <nav>
-      {{.Name}}
-
-      {{- if .Tags }}
-        <div class="tags">
-          {{- range $tag, $count := .Tags }}
-            <a href="/tags/{{$tag}}">{{$tag}}</a>&nbsp;
-          {{- end }}
-        </div>
-      {{- end }}
+      <a href="/">
+        {{.Blog.Name}} &larr;
+      </a>
     </nav>
+
+    <article>
+      <header class="lede">
+        <h1 class="lede__headline">{{.Tag}}</h1>
+      </header>
+    </article>
 
     <main>
       {{- range .Articles }}
