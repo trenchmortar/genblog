@@ -1,4 +1,4 @@
 blog.tar.gz
-release/README.md
-release/bin/linux
-release/bin/mac
+blog/README.md
+blog/bin/linux
+blog/bin/mac

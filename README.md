@@ -31,6 +31,7 @@ Download the latest release:
 
 ```
 curl -sL https://github.com/statusok/genblog/releases/download/v0.1.0/blog.tar.gz | tar xvz
+cd blog
 ```
 
 It contains:

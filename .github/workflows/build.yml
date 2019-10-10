@@ -19,7 +19,7 @@ jobs:
     - name: Build
       run: |
         ./release.sh
-        cd release
+        cd blog
         ./genblog add example-article
         echo 'Hello, world!' >> articles/example-article.md
         ./genblog build
