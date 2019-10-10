@@ -15,12 +15,14 @@ A static blog generator featuring:
 * `rel=canonical` tags
 * Default theme (can be edited directly)
 
-See [a blog with the default theme](https://www.statusok.com).
 The default theme features:
 
 * Responsive design
 * PageSpeed Insights performance score of 100
 * Mozilla Observatory security grade of A+
+
+[See a blog](https://www.statusok.com)
+modified slightly from the default theme.
 
 ## Create a blog
 
@@ -150,7 +152,7 @@ Configure blog in `config.json`:
 
 ## Extend theme
 
-The `theme` directory contains files that can be edited
+The `theme` directory's files can be edited
 to customize the blog's HTTP headers, HTML, CSS, and JavaScript.
 
 ```
@@ -172,8 +174,8 @@ The `article.html` file accepts a data structure like this:
 ```
 {
   Blog: {
-    Name:          "Blog",
-    URL:           "https://blog.example.com",
+    Name: "Blog",
+    URL:  "https://blog.example.com",
   }
   Article: {
     Author:        "Alice",
@@ -184,13 +186,64 @@ The `article.html` file accepts a data structure like this:
     LastUpdatedIn: "2018 April",
     LastUpdatedOn: "April 15, 2018",
     Published:     "2018-04-10",
-    Tags: [
-      "go",
-      "unix",
-    ],
+    Tags:          ["go", "unix"],
     Title:         "Example Article",
     Updated:       "2018-04-15",
   }
+}
+```
+
+The `index.html` file accepts a data structure like this:
+
+```
+{
+  Blog: {
+    Name: "Blog",
+    URL:  "https://blog.example.com",
+  },
+  Articles: [
+    {
+      Author:        "Alice",
+      Body:          "<p>Hello, world.</p>",
+      Canonical:     "https://seo.example.com/avoid-duplicate-content-penalty"
+      ID:            "example-article",
+      LastUpdated:   "2018-04-15",
+      LastUpdatedIn: "2018 April",
+      LastUpdatedOn: "April 15, 2018",
+      Published:     "2018-04-10",
+      Tags:          ["go", "unix"],
+      Title:         "Example Article",
+      Updated:       "2018-04-15",
+    }
+  ],
+  Tags: ["go", "unix"],
+}
+```
+
+The `tag.html` file accepts a data structure like this:
+
+```
+{
+  Blog: {
+    Name: "Blog",
+    URL:  "https://blog.example.com",
+  },
+  Articles: [
+    {
+      Author:        "Alice",
+      Body:          "<p>Hello, world.</p>",
+      Canonical:     "https://seo.example.com/avoid-duplicate-content-penalty"
+      ID:            "example-article",
+      LastUpdated:   "2018-04-15",
+      LastUpdatedIn: "2018 April",
+      LastUpdatedOn: "April 15, 2018",
+      Published:     "2018-04-10",
+      Tags:          ["go", "unix"],
+      Title:         "Example Article",
+      Updated:       "2018-04-15",
+    }
+  ],
+  Tag: "go"
 }
 ```
 
@@ -223,7 +276,7 @@ Get a working [Go installation](http://golang.org/doc/install).
 For example, on macOS:
 
 ```
-gover="1.13.1"
+gover="1.13"
 
 if ! go version | grep -Fq "$gover"; then
   sudo rm -rf /usr/local/go
