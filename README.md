@@ -14,7 +14,7 @@ A static blog generator featuring:
 * "Last updated" timestamp
 * Redirects
 * `rel=canonical` tags
-* Default theme (can be edited directly)
+* Default theme (can be modified directly)
 
 The default theme features:
 
@@ -40,16 +40,16 @@ It contains:
 .
 ├── .gitignore
 ├── README.md
-├── articles
-│   ├── code
-│   └── images
-├── bin
+├── articles/
+│   ├── code/
+│   └── images/
+├── bin/
 │   ├── linux
 │   └── mac
 ├── config.json
 ├── genblog
-├── public
-└── theme
+├── public/
+└── theme/
     ├── _headers
     ├── article.html
     ├── index.html
@@ -97,7 +97,6 @@ In addition to
 [fenced code blocks](https://github.github.com/gfm/#fenced-code-blocks),
 `./genblog` recognizes a special `embed`
 [info string](https://github.github.com/gfm/#info-string).
-
 This Markdown...
 
     Instantiate a client:
@@ -106,7 +105,8 @@ This Markdown...
     example.rb instantiate
     ```
 
-...embeds code from `articles/code/example.rb` like this:
+...embeds code from `articles/code/example.rb`
+between `begindoc` and `enddoc` magic comments:
 
 ```ruby
 # begindoc: instantiate
@@ -119,9 +119,8 @@ client = Example::Client.new(
 # enddoc: instantiate
 ```
 
-The `begindoc` and `enddoc` magic comments demarcate code blocks by id.
+The magic comments demarcate code blocks by id.
 In this example, the id is `instantiate`.
-The magic comments work for all common programming languages.
 
 This allows you to run the embedded code,
 or tests against the embedded code,
@@ -187,9 +186,9 @@ Configure blog in `config.json`:
 }
 ```
 
-## Extend theme
+## Modify theme
 
-The `theme` directory's files can be edited
+The `theme` directory's files can be modified
 to customize the blog's HTTP headers, HTML, CSS, and JavaScript.
 
 ```
@@ -203,8 +202,9 @@ to customize the blog's HTTP headers, HTML, CSS, and JavaScript.
 The `_headers` file is copied to `public/_headers` to be used as
 [Netlify Headers](https://www.netlify.com/docs/headers-and-basic-auth/).
 
-The `.html` files are used as templates by `./genblog`.
-They are parsed as [Go templates](https://gowebexamples.com/templates/).
+The `.html` files
+are parsed as [Go templates](https://gowebexamples.com/templates/)
+by `./genblog`.
 
 The `article.html` file accepts a data structure like this:
 
@@ -313,12 +313,11 @@ Get a working [Go installation](http://golang.org/doc/install).
 For example, on macOS:
 
 ```
-gover="1.13"
+ver="1.13"
 
-if ! go version | grep -Fq "$gover"; then
+if ! go version | grep -Fq "$ver"; then
   sudo rm -rf /usr/local/go
-  curl "https://dl.google.com/go/go$gover.darwin-amd64.tar.gz" | \
-    sudo tar xz -C /usr/local
+  curl "https://dl.google.com/go/go$ver.darwin-amd64.tar.gz" | sudo tar xz -C /usr/local
 fi
 ```
 
