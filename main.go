@@ -28,6 +28,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -401,9 +402,16 @@ func preProcess(filepath string) (title, body string) {
 			// backtrack to last newline to cut out comment character(s)
 			enddoc = strings.LastIndex(string(srcCode[0:enddoc]), "\n")
 
+			rawLines := strings.Split(string(srcCode[begindoc:enddoc]), "\n")
+			leadingWhitespace := regexp.MustCompile("(?m)(^[ \t]*)(?:[^ \t])")
+			var margin string
 			var lines []string
-			for _, l := range strings.Split(string(srcCode[begindoc:enddoc]), "\n") {
-				lines = append(lines, strings.TrimSpace(l))
+			for i, l := range rawLines {
+				if i == 0 {
+					margin = leadingWhitespace.FindAllStringSubmatch(l, -1)[0][1]
+				}
+				dedented := regexp.MustCompile("(?m)^"+margin).ReplaceAllString(l, "")
+				lines = append(lines, dedented)
 			}
 
 			ext := strings.Trim(path.Ext(filename), ".")
