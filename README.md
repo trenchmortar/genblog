@@ -30,7 +30,7 @@ modified slightly from the default theme.
 Download the latest release:
 
 ```
-curl -sL https://github.com/statusok/genblog/releases/download/v0.1.1/blog.tar.gz | tar xvz
+curl -sL https://github.com/statusok/genblog/releases/download/v0.2.0/blog.tar.gz | tar xvz
 cd blog
 ```
 
@@ -122,8 +122,7 @@ client = Example::Client.new(
 The magic comments demarcate code blocks by id.
 In this example, the id is `instantiate`.
 
-This allows you to run the embedded code,
-or tests against the embedded code,
+This allows you to run, lint, and test embedded code
 separate from Markdown prose.
 
 ## Configure

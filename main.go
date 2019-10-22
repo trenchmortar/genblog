@@ -10,7 +10,7 @@ Serve site on localhost:
 
   genblog serve
 
-Build site (HTML, images, Netlify files) to `public/`:
+Build site (HTML, images, code, Netlify files) to `public/`:
 
   genblog build
 
@@ -93,7 +93,7 @@ type Blog struct {
 	URL  string `json:"url"`
 }
 
-// Article contains data loaded from config.json and parsed Markdown files
+// Article contains data loaded from config.json and parsed Markdown
 type Article struct {
 	Author        string        `json:"author"`
 	Body          template.HTML `json:"-"`
@@ -103,13 +103,14 @@ type Article struct {
 	LastUpdatedIn string        `json:"-"`
 	LastUpdatedOn string        `json:"-"`
 	Published     string        `json:"published"`
+	Redirects     []string      `json:"redirects,omitempty"`
 	Tags          []string      `json:"tags,omitempty"`
 	Title         string        `json:"-"`
 	Updated       string        `json:"updated,omitempty"`
 }
 
 func add(id string) {
-	blog, articles, _ := load()
+	blog, articles, _, _ := load()
 
 	noDashes := strings.Replace(id, "-", " ", -1)
 	noUnderscores := strings.Replace(noDashes, "_", " ", -1)
@@ -144,16 +145,22 @@ func serve(addr string) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	build()
+	redirectMap := build()
 
 	fmt.Println("genblog: " + r.Method + " " + r.URL.Path)
+
+	for k, v := range redirectMap {
+		if r.URL.Path == k {
+			http.Redirect(w, r, v, 302)
+		}
+	}
 
 	// convert URLs like /intro to /intro.html for http.FileServer
 	if r.URL.Path != "/" && path.Ext(r.URL.Path) == "" {
 		r.URL.Path = r.URL.Path + ".html"
 	}
 
-	// use same headers specified in production, if present
+	// use same headers as production, if present
 	for k, v := range headers() {
 		w.Header().Set(k, v)
 	}
@@ -186,18 +193,19 @@ func headers() map[string]string {
 	return result
 }
 
-func build() {
-	blog, articles, tagMap := load()
+func build() map[string]string {
+	blog, articles, tagMap, redirectMap := load()
 
+	// public directories
 	check(os.RemoveAll(wd + "/public"))
 	check(os.MkdirAll(wd+"/public/images", os.ModePerm))
 	check(os.MkdirAll(wd+"/public/tags", os.ModePerm))
 
+	// tags
 	tags := []string{}
 	tagPage := template.Must(template.ParseFiles(wd + "/theme/tag.html"))
 	for tag, tagArticles := range tagMap {
 		tags = append(tags, tag)
-
 		f, err := os.Create("public/tags/" + tag + ".html")
 		check(err)
 		tagData := struct {
@@ -212,6 +220,7 @@ func build() {
 		check(tagPage.Execute(f, tagData))
 	}
 
+	// index page
 	indexPage := template.Must(template.ParseFiles(wd + "/theme/index.html"))
 	f, err := os.Create("public/index.html")
 	check(err)
@@ -226,13 +235,13 @@ func build() {
 	}
 	check(indexPage.Execute(f, indexData))
 
+	// feed and article pages
 	feed := jsonfeed.Feed{
 		Title:       blog.Name,
 		HomePageURL: blog.URL,
 		FeedURL:     blog.URL + "/feed.json",
 	}
 	feed.Items = make([]jsonfeed.Item, len(articles))
-
 	articlePage := template.Must(template.ParseFiles(wd + "/theme/article.html"))
 	for i, a := range articles {
 		f, err := os.Create("public/" + a.ID + ".html")
@@ -245,7 +254,6 @@ func build() {
 			Article: a,
 		}
 		check(articlePage.Execute(f, articleData))
-
 		item := jsonfeed.Item{
 			ID:          blog.URL + "/" + a.ID,
 			URL:         blog.URL + "/" + a.ID,
@@ -264,19 +272,29 @@ func build() {
 		item.Author = &jsonfeed.Author{Name: a.Author}
 		feed.Items[i] = item
 	}
-
 	f, err = os.Create("public/feed.json")
 	check(err)
 	check(json.NewEncoder(f).Encode(&feed))
 
+	// images
 	cmd := exec.Command("cp", "-a", wd+"/articles/images/.", wd+"/public/images")
 	cmd.Run()
 
-	cmd = exec.Command("cp", wd+"/theme/{_headers,_redirects}", wd+"/public")
+	// headers
+	cmd = exec.Command("cp", wd+"/theme/_headers", wd+"/public")
 	cmd.Run()
+
+	// redirects
+	redirects := ""
+	for k, v := range redirectMap {
+		redirects = redirects + k + " " + v + "\n"
+	}
+	check(ioutil.WriteFile(wd+"/public/_redirects", []byte(redirects), 0644))
+
+	return redirectMap
 }
 
-func load() (Blog, []Article, map[string][]Article) {
+func load() (Blog, []Article, map[string][]Article, map[string]string) {
 	config, err := ioutil.ReadFile(wd + "/config.json")
 	check(err)
 	var data struct {
@@ -287,6 +305,7 @@ func load() (Blog, []Article, map[string][]Article) {
 
 	articles := make([]Article, len(data.Articles))
 	tagMap := make(map[string][]Article)
+	redirectMap := make(map[string]string)
 
 	for i, a := range data.Articles {
 		title, body := preProcess("articles/" + a.ID + ".md")
@@ -308,6 +327,7 @@ func load() (Blog, []Article, map[string][]Article) {
 			LastUpdatedIn: t.Format("2006 January"),
 			LastUpdatedOn: t.Format("January 2, 2006"),
 			Published:     a.Published,
+			Redirects:     a.Redirects,
 			Tags:          a.Tags,
 			Title:         title,
 			Updated:       a.Updated,
@@ -317,9 +337,13 @@ func load() (Blog, []Article, map[string][]Article) {
 		for _, t := range a.Tags {
 			tagMap[t] = append(tagMap[t], a)
 		}
+
+		for _, r := range a.Redirects {
+			redirectMap[r] = "/" + a.ID
+		}
 	}
 
-	return data.Blog, articles, tagMap
+	return data.Blog, articles, tagMap, redirectMap
 }
 
 /*

@@ -1,9 +1,9 @@
-name: Build
+name: genblog
 on: [push]
 jobs:
 
   build:
-    name: Build
+    name: build
     runs-on: macOS-latest
     steps:
 
