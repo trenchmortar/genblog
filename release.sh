@@ -4,9 +4,28 @@
 
 set -euo pipefail
 
-# Generated binaries and README.md are ignored by Git.
-GOOS=linux GOARCH=amd64 go build -o blog/bin/linux .
-GOOS=darwin GOARCH=amd64 go build -o blog/bin/mac .
+# Generated binaries are ignored by Git.
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o blog/bin/linux .
+GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o blog/bin/mac .
+
+# Compress
+(
+  cd blog/bin
+
+  if ! command -v upx >/dev/null; then
+    if ! command -v brew >/dev/null; then
+      echo "install upx and then re-run script"
+      exit 1
+    fi
+
+    brew install upx
+  fi
+
+  upx linux
+  upx mac
+)
+
+# Generated README.md is ignored by Git.
 cp README.md blog
 
 line_number() {
